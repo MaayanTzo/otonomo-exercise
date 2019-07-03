@@ -1,28 +1,40 @@
 import React, { Component } from 'react'
 import logo from './logo.svg'
 import './App.css'
-//import createStreamerFrom from './api/streamer'
-//import generateCarData from './api/data-generator'
+import createStreamerFrom from './api/streamer'
+import generateCarData from './api/data-generator'
 import createCarStreamer from './api/car-data-streamer'
 import Button from './components/Button'
 import Checkbox from './components/Checkbox'
 import Input from './components/Input'
-//import EventNotification from './components/EventNotification'
+import EventNotification from './components/EventNotification'
 
 class App extends Component {
-  //streamer = createStreamerFrom(() => generateCarData('12345678901234567'))
-  carStreamer = createCarStreamer('12345678901234567')
-  state = { carData: {} }
-
+  streamer = createStreamerFrom(() => generateCarData('12345678901234567'))
+  state = {
+    carData: {},
+  }
+  setVin = this.setVin.bind(this)
   updateState = carData => {
     this.setState({ carData })
   }
-
-  componentDidMount() {
-    this.carStreamer.subscribe(this.updateState)
-    this.carStreamer.start()
+  componentWillMount() {
+    console.log(this.state.carData)
   }
-
+  componentDidMount() {
+    this.streamer.subscribe(this.updateState)
+    this.streamer.start()
+  }
+  setVin() {
+    console.log('working')
+    console.log(this.vinInput.value)
+    const carStreamer = createCarStreamer(this.vinInput.value)
+    console.log(this.state.carData)
+    carStreamer.start()
+    carStreamer.subscribe(carData => {
+      this.setState({ carData })
+    })
+  }
   render() {
     return (
       <div className="App">
@@ -32,20 +44,11 @@ class App extends Component {
             Edit <code>src/App.js</code> and save to reload.
             {JSON.stringify(this.state.carData)}
           </p>*/}
-          <Input></Input>
-          <Button></Button>
+          <Input newVin={x => (this.vinInput = x)}></Input>
+          <Button setVin={this.setVin}>Add+</Button>
           <Checkbox></Checkbox>
-          <div>{'VIN: ' + JSON.stringify(this.state.carData.vin)}</div>
-          <div>
-            {'timestamp: ' + JSON.stringify(this.state.carData.timestamp)}
-          </div>
-          <div>{'Fuel Level: ' + JSON.stringify(this.state.carData.fuel)}</div>
-          <div>
-            {'Wiper Fluid: ' + JSON.stringify(this.state.carData.wiperFluid)}
-          </div>
-          <div>
-            {'Location: ' + JSON.stringify(this.state.carData.location)}
-          </div>
+          <EventNotification carEvent={this.state.carData}></EventNotification>
+          <div>{JSON.stringify(this.state.carData)}</div>
           <a
             className="App-link"
             href="https://reactjs.org"

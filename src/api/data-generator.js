@@ -1,4 +1,5 @@
 import faker from 'faker'
+
 export default function generateCarData(vin) {
   return {
     vin,

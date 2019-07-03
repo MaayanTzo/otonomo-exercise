@@ -4,7 +4,15 @@ import cn from 'classnames'
 import './Input.scss'
 
 function Input({ className, ...props }) {
-  return <input type="text" {...props} className={cn('input', className)} />
+  return (
+    <input
+      type="text"
+      ref={props.newVin}
+      onChange={props.getVin}
+      {...props}
+      className={cn('input', className)}
+    />
+  )
 }
 
 export default Input
