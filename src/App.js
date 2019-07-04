@@ -16,8 +16,9 @@ class App extends Component {
   }
   listEvents = []
   listVins = []
-  unselectedVin = null
+  unselectedVin = []
   setVin = this.setVin.bind(this)
+  checkIfSelected = this.checkIfSelected.bind(this)
   updateState = carData => {
     this.setState({ carData })
   }
@@ -29,25 +30,49 @@ class App extends Component {
       this.listEvents.push(carData)
       this.updateState()
     })
+    //console.log(this.listEvents)
     this.listVins.push(this.vinInput.value)
-    console.log(this.listVins)
+    //console.log(this.listVins)
+  }
+  checkIfSelected(event) {
+    //console.log(this.state.isChecked)
+    event.target.classList.toggle('unselected')
+    //console.log(event.target.classList);
+    var currentVinIndex = this.unselectedVin.indexOf(event.target.id)
+    console.log(currentVinIndex)
+    var isVinUnselected = event.target.classList.contains('unselected')
+    if (isVinUnselected) {
+      this.unselectedVin.push(event.target.id)
+      console.log(this.unselectedVin)
+    } else {
+      this.unselectedVin.splice(currentVinIndex, 1)
+      console.log(this.unselectedVin)
+    }
+    //console.log(this.isVinUnselected)
+    //console.log(this.unselectedVin)
   }
   render() {
     var allVins = []
     for (let i = 0; i < this.listVins.length; i++) {
       allVins.push(
-        <Checkbox defaultChecked key={i}>
+        <Checkbox
+          defaultChecked
+          onClick={this.checkIfSelected}
+          id={this.listVins[i]}
+          key={i}>
           {this.listVins[i]}
         </Checkbox>,
       )
     }
     var allEvents = []
     for (let i = 0; i < this.listEvents.length; i++) {
-      allEvents.push(
-        <EventNotification carEvent={this.listEvents[i]} key={i}>
-          {this.listEvents[i]}
-        </EventNotification>,
-      )
+      if (!this.unselectedVin.includes(this.listEvents[i].vin)) {
+        allEvents.push(
+          <EventNotification carEvent={this.listEvents[i]} key={i}>
+            {this.listEvents[i]}
+          </EventNotification>,
+        )
+      }
     }
 
     return (
