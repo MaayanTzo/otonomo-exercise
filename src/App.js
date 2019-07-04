@@ -13,12 +13,15 @@ class App extends Component {
   //streamer = createStreamerFrom(() => generateCarData('12345678901234567'))
   state = {
     carData: {},
+    isFuelFiltered: false,
   }
   listEvents = []
+  listEventsUnder15 = []
   listVins = []
   unselectedVin = []
   setVin = this.setVin.bind(this)
   checkIfSelected = this.checkIfSelected.bind(this)
+  filterByFuel = this.filterByFuel.bind(this)
   updateState = carData => {
     this.setState({ carData })
   }
@@ -29,27 +32,28 @@ class App extends Component {
     carStreamer.subscribe(carData => {
       this.listEvents.push(carData)
       this.updateState()
+      if (carData.fuel < 0.16) {
+        this.listEventsUnder15.push(carData)
+      }
     })
-    //console.log(this.listEvents)
     this.listVins.push(this.vinInput.value)
-    //console.log(this.listVins)
   }
   checkIfSelected(event) {
-    //console.log(this.state.isChecked)
     event.target.classList.toggle('unselected')
-    //console.log(event.target.classList);
     var currentVinIndex = this.unselectedVin.indexOf(event.target.id)
-    console.log(currentVinIndex)
     var isVinUnselected = event.target.classList.contains('unselected')
     if (isVinUnselected) {
       this.unselectedVin.push(event.target.id)
-      console.log(this.unselectedVin)
     } else {
       this.unselectedVin.splice(currentVinIndex, 1)
-      console.log(this.unselectedVin)
     }
-    //console.log(this.isVinUnselected)
-    //console.log(this.unselectedVin)
+  }
+  filterByFuel() {
+    var fuelFilter = this.state.isFuelFiltered ? false : true
+    console.log('filter')
+    this.setState({
+      isFuelFiltered: fuelFilter,
+    })
   }
   render() {
     var allVins = []
@@ -64,17 +68,31 @@ class App extends Component {
         </Checkbox>,
       )
     }
-    var allEvents = []
-    for (let i = 0; i < this.listEvents.length; i++) {
-      if (!this.unselectedVin.includes(this.listEvents[i].vin)) {
-        allEvents.push(
-          <EventNotification carEvent={this.listEvents[i]} key={i}>
-            {this.listEvents[i]}
-          </EventNotification>,
-        )
+    if (this.state.isFuelFiltered) {
+      var allEvents = []
+      for (let i = 0; i < this.listEventsUnder15.length; i++) {
+        if (!this.unselectedVin.includes(this.listEventsUnder15[i].vin)) {
+          allEvents.push(
+            <EventNotification carEvent={this.listEventsUnder15[i]} key={i}>
+              {this.listEventsUnder15[i]}
+            </EventNotification>,
+          )
+        }
+      }
+    } else {
+      var allEvents = []
+      for (let i = 0; i < this.listEvents.length; i++) {
+        if (!this.unselectedVin.includes(this.listEvents[i].vin)) {
+          allEvents.push(
+            <EventNotification carEvent={this.listEvents[i]} key={i}>
+              {this.listEvents[i]}
+            </EventNotification>,
+          )
+        }
       }
     }
 
+    var check = this.state.isFuelFiltered ? 'checked' : ''
     return (
       <div className="App">
         <header className="App-header">
@@ -85,6 +103,9 @@ class App extends Component {
           </p>*/}
           <Input newVin={x => (this.vinInput = x)}></Input>
           <Button setVin={this.setVin}>Add+</Button>
+          <Checkbox defaultChecked={check} onClick={this.filterByFuel}>
+            Filter events where fuel level is under 15%
+          </Checkbox>
           {allVins}
           {allEvents}
           <a
