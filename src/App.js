@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import logo from './logo.svg'
+//import logo from './logo.svg'
 import './App.css'
 //import createStreamerFrom from './api/streamer'
 //import generateCarData from './api/data-generator'
@@ -14,6 +14,7 @@ class App extends Component {
   state = {
     carData: {},
     isFuelFiltered: false,
+    userMessage: ""
   }
   listEvents = []
   listEventsUnder15 = []
@@ -27,16 +28,26 @@ class App extends Component {
   }
 
   setVin() {
-    const carStreamer = createCarStreamer(this.vinInput.value)
-    carStreamer.start()
-    carStreamer.subscribe(carData => {
-      this.listEvents.push(carData)
-      this.updateState()
-      if (carData.fuel < 0.16) {
-        this.listEventsUnder15.push(carData)
-      }
-    })
-    this.listVins.push(this.vinInput.value)
+    var re = /[0-9a-zA-Z]{17}/
+    if (re.test(this.vinInput.value)) {
+      this.setState({
+        userMessage: ""
+      })
+      const carStreamer = createCarStreamer(this.vinInput.value)
+      carStreamer.start()
+      carStreamer.subscribe(carData => {
+        this.listEvents.push(carData)
+        this.updateState()
+        if (carData.fuel < 0.16) {
+          this.listEventsUnder15.push(carData)
+        }
+      })
+      this.listVins.push(this.vinInput.value)
+    } else {
+      this.setState({
+        userMessage: "Invalid entry. Please enter a 17 character alphanumeric VIN"
+      })
+    }
   }
   checkIfSelected(event) {
     event.target.classList.toggle('unselected')
@@ -50,7 +61,6 @@ class App extends Component {
   }
   filterByFuel() {
     var fuelFilter = this.state.isFuelFiltered ? false : true
-    console.log('filter')
     this.setState({
       isFuelFiltered: fuelFilter,
     })
@@ -68,8 +78,8 @@ class App extends Component {
         </Checkbox>,
       )
     }
+    var allEvents = []
     if (this.state.isFuelFiltered) {
-      var allEvents = []
       for (let i = 0; i < this.listEventsUnder15.length; i++) {
         if (!this.unselectedVin.includes(this.listEventsUnder15[i].vin)) {
           allEvents.push(
@@ -80,7 +90,6 @@ class App extends Component {
         }
       }
     } else {
-      var allEvents = []
       for (let i = 0; i < this.listEvents.length; i++) {
         if (!this.unselectedVin.includes(this.listEvents[i].vin)) {
           allEvents.push(
@@ -91,31 +100,31 @@ class App extends Component {
         }
       }
     }
-
     var check = this.state.isFuelFiltered ? 'checked' : ''
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
           {/*<p>
             Edit <code>src/App.js</code> and save to reload.
             {JSON.stringify(this.state.carData)}
           </p>*/}
-          <Input newVin={x => (this.vinInput = x)}></Input>
-          <Button setVin={this.setVin}>Add+</Button>
-          <Checkbox defaultChecked={check} onClick={this.filterByFuel}>
-            Filter events where fuel level is under 15%
+          <div className="top-header">
+            <div className="input-field">
+              <Input newVin={x => (this.vinInput = x)}></Input>
+              <div>{this.state.userMessage}</div>
+            </div>
+            <Button setVin={this.setVin}>Add+</Button>
+          </div>
+          <div className="vinList">
+            <Checkbox defaultChecked={check} onClick={this.filterByFuel}>
+              Filter events where fuel level is under 15%
           </Checkbox>
-          {allVins}
-          {allEvents}
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer">
-            Learn React
-          </a>
+            {allVins}
+          </div>
         </header>
+        <div className="events">
+          {allEvents}
+        </div>
       </div>
     )
   }

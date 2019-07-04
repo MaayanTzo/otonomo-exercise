@@ -9,7 +9,6 @@ function Input({ className, ...props }) {
       type="text"
       ref={props.newVin}
       onChange={props.getVin}
-      {...props}
       className={cn('input', className)}
     />
   )
